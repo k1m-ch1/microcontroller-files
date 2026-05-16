@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+arduino-cli compile $1 --fqbn arduino:avr:nano -v

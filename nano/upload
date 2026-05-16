@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+arduino-cli upload $1 -p $2 --fqbn arduino:avr:nano -v
