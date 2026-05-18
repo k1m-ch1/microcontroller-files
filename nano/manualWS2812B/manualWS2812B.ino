@@ -1,8 +1,8 @@
 
 // this is the Data Direction Register for our pin
-#define LED_DDR DDRB
-#define LED_PORT PORTB
-#define LED_PIN PB1
+#define LED_DDR DDRD
+#define LED_PORT PORTD
+#define LED_PIN PD6
 // LED_PIN is defined with respect to the port (for pin 9, it's PORT B, PB1)
 
 /*
@@ -36,36 +36,42 @@
  * Reset: over $50 000 ns$ of LOW
 */
 
-void sendBit0(){
-  LED_PORT |= 1 << LED_PIN;
-  // 400 ns
-  // switching it back to LOW takes at least 2 cycles, so we'll wait for 4 cycles
-  asm volatile ("nop");
-  LED_PORT &= ~(1 << LED_PIN);
-  // now wait for 850 ns might need to delay this even less... let's see
-  asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-}
-
-void sendBit1(){
-  LED_PORT |= 1 << LED_PIN;
-  // wait for 800 ns
-  asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-  LED_PORT &= ~(1 << LED_PIN);
-  asm volatile ("nop\nnop\nnop\nnop\nnop");
-}
-
-void sendBit(bool bit){
-  if (bit){
-    sendBit1();
-  }
-  else{
-    sendBit0();
-  }
-}
-
 void sendResetCode(){
-  LED_DDR &= ~(1 << LED_PIN);
+  LED_PORT &= ~(1 << LED_PIN);
   // this is already at least 2 cycles, so already 125ns has passed
+  int start = millis();
+  while(millis() - start < 60){
+  }
+}
+
+
+
+void send0(){
+  LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\n");
+}
+
+void send1(){
+  LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+}
+
+template<bool bit>
+inline void sendBit(){
+  if constexpr (bit){
+    LED_PORT |= (1 << LED_PIN);
+    __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+    LED_PORT &= ~(1 << LED_PIN);
+  } else {
+    LED_PORT |= (1 << LED_PIN);
+    __asm__("nop\nnop\nnop\nnop\n");
+    LED_PORT &= ~(1 << LED_PIN);
+    __asm__("nop\nnop\nnop\nnop\nnop\n");
+
+  }
 }
 
 void setup(){
@@ -77,29 +83,34 @@ void setup(){
 
 void loop(){
   noInterrupts();
-  sendBit0();
-  //sendBit1();
   /*
-  byte greenByte = 0x00;
-  byte redByte = 0x00;
-  byte blueByte = 0x00;
-  // send it GRB
-  for (int i = 7; i >= 0; i--){
-    // we send it MSB
-    sendBit((greenByte >> i) & 0b1);
-  }
-
-  for (int i = 7; i >= 0; i--){
-    // we send it MSB
-    sendBit((redByte >> i) & 0b1);
-  }
-
-  for (int i = 7; i >= 0; i--){
-    // we send it MSB
-    sendBit((blueByte >> i) & 0b1);
-  }
-  sendResetCode();
+  uint_32 color = 0xFF0000;
+  uint_8 redByte = (color >> 4) & 0b11;
+  uint_8 blueByte = (color >> 2) & 0b11;
+  uint_8 greenByte = (color >> 0) & 0b11;
   */
+  // send it in the order of GRB
+
+ LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\n");
+
+  LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+
+  LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+
+ LED_PORT |= (1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\n");
+  LED_PORT &= ~(1 << LED_PIN);
+  __asm__("nop\nnop\nnop\nnop\nnop\n");
+
+ // since a function call adds so much overhead, this is like pretty much imposssible to do without assembly, or without writing really shit code
+ 
   interrupts();
   delay(500);
 }
