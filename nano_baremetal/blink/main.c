@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define DELAY_TIME 1000
+#define DELAY_TIME 2000
 
 int main() {
   DDRB |= (1 << PB5);
