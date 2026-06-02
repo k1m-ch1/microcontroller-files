@@ -1,0 +1,16 @@
+[
+  {
+    "file": "main.c",
+    "arguments": [
+      "/usr/bin/avr-gcc",
+      "-mmcu=atmega328p",
+      "-DF_CPU=16000000UL",
+      "-Os",
+      "main.c",
+      "-o",
+      "main.elf"
+    ],
+    "directory": "/home/k1mch1/Documents/microcontroller-files/nano_baremetal/ledStrip",
+    "output": "main.elf"
+  }
+]
