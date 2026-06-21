@@ -1,8 +1,8 @@
 #define R_PIN D6
 #define G_PIN D7
-#define B_PIN D8
+#define B_PIN D5
 
-#define DELAY_TIME 1000
+#define DELAY_TIME 2500
 
 void setup(){
   Serial.begin(115200);
