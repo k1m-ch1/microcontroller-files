@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-arduino-cli upload $1 -p $2 --fqbn esp8266:esp8266:d1_mini_clone -v
+./compile $1 && arduino-cli upload $1 -p $2 --fqbn esp8266:esp8266:d1_mini_clone -v
