@@ -14,6 +14,10 @@ Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 char msg[50];
 char floatBuffer[10];
 float maxCurrent = 0;
+int oldVal = 0;
+int val = 0;
+int tmp;
+float alpha = 0.25f;
 
 void oledPrint(char msg[]){
   display.clearDisplay();
@@ -36,7 +40,9 @@ void setup() {
 
 void loop() {
   oledPrint(msg);
-  int val = analogRead(A0);
+  tmp = val;
+  val = alpha*analogRead(A0) + (1 - alpha)*oldVal;
+  oldVal = tmp;
   //185 mV/A for 5A, 100 mV/A for 20A, and 66 mV/A for 30A
   float voltage = (val/1024.0f)*5.0f;
   float current = (voltage - 2.5)/0.066f;
