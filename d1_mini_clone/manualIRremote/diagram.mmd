@@ -1,0 +1,43 @@
+stateDiagram-v2
+
+  state "ACG passed" as ACGPassed
+  state "pause passed" as pausePassed
+  state "first pause passed" as firstPausePassed
+  state "first low bit recognized" as firstLowBitRecognized
+
+  state "low bit recognized" as lowBitRecognized
+
+  %% I guess we want to be extremely conservative with what we accept
+
+  Start --> ACGPassed : in 8ms +- epsilon LOW (threshold can be adjusted)
+  Start --> Start : not in 8ms +- epsilon LOW
+  ACGPassed --> firstPausePassed : in 4.5ms +- epsilon HIGH
+  ACGPassed -->  Start: not in 4.5ms +- epsilon HIGH
+
+  pausePassed --> lowBitRecognized : LOW for 500 us +- epsilon (threshold can be adjusted, and mean should probably be the cannonical NEC protocol specification)
+
+  firstPausePassed --> firstLowBitRecognized : LOW for 500 us +- epsilon
+  firstPausePassed --> Start: otherwise
+
+  firstLowBitRecognized --> pausePassed : HIGH for 600 us +- epsilon (externally have side effects by storing the bit as 0)
+
+  firstLowBitRecognized --> pausePassed : HIGH for 1200 us +- epsilon (externally have side effects by storing the bit as 1)
+
+  firstLowBitRecognized --> Start: HIGH for > 1200 us + epsilon (externally recognize it as stop bit)
+
+  pausePassed --> Start : otherwise
+
+  lowBitRecognized --> pausePassed : HIGH for 600 us +- epsilon (externally have side effects by storing the bit as 0)
+
+  lowBitRecognized --> pausePassed : HIGH for 1200 us +- epsilon (externally have side effects by storing the bit as 1)
+
+  lowBitRecognized --> Start : otherwise (make sure to store a count, and if the count is 32, then recognize it as a valid frame and return that byte)
+
+
+
+
+
+
+
+
+
