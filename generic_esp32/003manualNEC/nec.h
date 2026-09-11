@@ -20,8 +20,6 @@
 enum NECState {
   IDLE,
   ACG_PASSED,
-  FIRST_PAUSE_PASSED,
-  FIRST_LOW_OF_BIT_RECOGNIZED,
   PAUSE_PASSED,
   LOW_OF_BIT_RECOGNIZED,
   STATES_COUNT
@@ -44,12 +42,12 @@ extern QueueHandle_t edgeInfoQueueHandle;
 
 const AcceptedRanges acgRange = {.mean = 9000, .epsilon = 500};
 
-const AcceptedRanges offPeriodRange = {.mean = 4500, .epsilon = 1000};
+const AcceptedRanges offPeriodRange = {.mean = 4500, .epsilon = 200};
 
 const AcceptedRanges lowOfBitRange = {.mean = 562, .epsilon = 200};
 
 const AcceptedRanges highOfBitRange[2] = {{.mean = 562, .epsilon = 200},
-                                          {.mean = 1687, .epsilon = 600}};
+                                          {.mean = 1687, .epsilon = 200}};
 
 void necInit();
 
