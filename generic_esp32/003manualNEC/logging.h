@@ -1,0 +1,25 @@
+#pragma once
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+
+#include <stdint.h>
+
+// 256 bytes for each log should be plenty
+#define LOG_MESSAGE_SIZE 256
+#define LOG_QUEUE_SIZE 32
+
+typedef enum { MOTOR, MIXER, RC, NEC } LogSource;
+
+typedef struct {
+  uint32_t timestamp;
+  LogSource logSource;
+  char text[LOG_MESSAGE_SIZE];
+} LogMessage;
+
+extern QueueHandle_t logQueueHandle;
+extern TaskHandle_t loggingTaskHandle;
+
+void loggingInit();
+const char *getLogSourceName(LogSource logSource);
+void loggingTask(void *arg);
