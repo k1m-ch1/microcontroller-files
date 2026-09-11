@@ -57,7 +57,7 @@ void necDecoderTask(void *args) {
       // if we've reached the timeout
       if (currentState == LOW_OF_BIT_RECOGNIZED && bitCount == 0) {
         necLogMessage.timestamp = millis();
-        sprintf(necLogMessage.text, "this might be a repeat code");
+        sprintf(necLogMessage.text, "This might be a repeat code");
         xQueueSend(logQueueHandle, &necLogMessage, 0);
       }
       bitCount = 0;
@@ -78,10 +78,6 @@ void necDecoderTask(void *args) {
       if ((currentEdge.type == RISING) &&
           (pulseTime <= acgRange.mean + acgRange.epsilon) &&
           (pulseTime >= acgRange.mean - acgRange.epsilon)) {
-        necLogMessage.timestamp = millis();
-        sprintf(necLogMessage.text, "Moving from %s to %s. pulseTime: %lu",
-                statesAsString[IDLE], statesAsString[ACG_PASSED], pulseTime);
-        xQueueSend(logQueueHandle, &necLogMessage, 0);
         currentState = ACG_PASSED;
       }
       break;
@@ -89,15 +85,8 @@ void necDecoderTask(void *args) {
       if (!((currentEdge.type == FALLING) &&
             (pulseTime <= offPeriodRange.mean + offPeriodRange.epsilon) &&
             (pulseTime >= offPeriodRange.mean - offPeriodRange.epsilon))) {
-        // move back to idle if all of these are aren't all satisified
         currentState = IDLE;
       }
-
-      necLogMessage.timestamp = millis();
-      sprintf(necLogMessage.text, "Moving from %s to %s. pulseTime: %lu",
-              statesAsString[ACG_PASSED], statesAsString[PAUSE_PASSED],
-              pulseTime);
-      xQueueSend(logQueueHandle, &necLogMessage, 0);
       currentState = PAUSE_PASSED;
       break;
     case PAUSE_PASSED:
@@ -106,7 +95,6 @@ void necDecoderTask(void *args) {
             (pulseTime >= lowOfBitRange.mean - lowOfBitRange.epsilon))) {
         currentState = IDLE;
       }
-
       if (bitCount == 32) {
         necLogMessage.timestamp = millis();
         sprintf(necLogMessage.text, "Got a complete frame: %X", receivedBit,
@@ -117,13 +105,6 @@ void necDecoderTask(void *args) {
         bitCount = 0;
         receivedBit = 0;
       }
-      /*
-      necLogMessage.timestamp = millis();
-      sprintf(necLogMessage.text, "Moving from %s to %s. pulseTime: %lu",
-              statesAsString[PAUSE_PASSED],
-              statesAsString[LOW_OF_BIT_RECOGNIZED], pulseTime);
-      xQueueSend(logQueueHandle, &necLogMessage, 0);
-      */
       currentState = LOW_OF_BIT_RECOGNIZED;
       break;
     case LOW_OF_BIT_RECOGNIZED:
@@ -133,15 +114,12 @@ void necDecoderTask(void *args) {
         break;
       }
 
-      necLogMessage.timestamp = millis();
       if (pulseTime <= highOfBitRange[0].mean + highOfBitRange[0].epsilon &&
           pulseTime >= highOfBitRange[0].mean - highOfBitRange[0].epsilon) {
         // if it's within the highOfBitRange[0], then we just move to the pause
         // passed, while storing the bit as 0
         bitCount += 1;
         receivedBit = (receivedBit << 1) + 0b0;
-        sprintf(necLogMessage.text, "bitCount: %d, receivedBit: %lu, got 0",
-                bitCount, receivedBit, pulseTime);
 
       } else if (pulseTime <=
                      highOfBitRange[1].mean + highOfBitRange[1].epsilon &&
@@ -149,27 +127,24 @@ void necDecoderTask(void *args) {
                      highOfBitRange[1].mean - highOfBitRange[1].epsilon) {
         bitCount += 1;
         receivedBit = (receivedBit << 1) + 0b1;
-        sprintf(necLogMessage.text, "bitCount: %d, receivedBit: %lu, got 1",
-                bitCount, receivedBit, pulseTime);
       } else {
         currentState = IDLE;
         break;
       }
-      xQueueSend(logQueueHandle, &necLogMessage, 0);
-      currentState = PAUSE_PASSED;
 
       // NOTE: there's an additional case where if the pulseTime is indefinitely
       // high, we're sending a repeat code, but this will be handled by the
       // queueTimeout
+
+      /*
+      necLogMessage.timestamp = millis();
+      sprintf(necLogMessage.text, "bitCount: %d, receivedBit: %lu, got 1",
+                bitCount, receivedBit, pulseTime);
+
+      xQueueSend(logQueueHandle, &necLogMessage, 0);
+      */
+      currentState = PAUSE_PASSED;
       break;
     }
-
-    // if we got an edge:
-    /*
-    necLogMessage.timestamp = millis();
-    sprintf(necLogMessage.text, "got a %d at %ul", edgeInfo.type,
-            edgeInfo.timestamp);
-    xQueueSend(logQueueHandle, &necLogMessage, 0);
-    */
   }
 }
